@@ -3,8 +3,10 @@ type: Guide
 title: "Contact Form: Customization Guide"
 description: "How to change the contact form's colors and width, and suggested next steps."
 tags: [contact-form, html, css, customization]
-status: draft
-generated: { by: human:Easin, at: 2026-10-07T07:02:33Z }
+status: stable
+generated: { by: human:Easin, at: 2026-10-07T08:30:08Z }
+verified:
+  - { by: human:Easin, at: 2026-10-07T08:31:29Z }
 ---
 
 # Contact Form: Customization Guide

@@ -3,8 +3,10 @@ type: Reference
 title: "Contact Form: Overview"
 description: "Fields, layout, styling and known limitation of the single-file HTML/CSS contact form."
 tags: [contact-form, html, css, reference]
-status: draft
-generated: { by: human:Easin, at: 2026-10-07T07:14:43Z }
+status: stable
+generated: { by: human:Easin, at: 2026-10-07T08:30:08Z }
+verified:
+  - { by: human:Easin, at: 2026-10-07T08:31:29Z }
 ---
 
 # Contact Form: Overview
