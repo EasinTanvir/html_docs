@@ -1,11 +1,12 @@
 # OKF Docs Commands: Team Guide
 
-Two Claude Code commands that turn our normal Markdown docs into **OKF** (Open Knowledge Format) v0.2 files, and let a teammate sign them off after review.
+Three Claude Code commands that turn our normal Markdown docs into **OKF** (Open Knowledge Format) v0.2 files, let a teammate sign them off after review, and reopen a doc when it needs changes.
 
 | Command | Who runs it | What it does |
 |---|---|---|
 | `/okf-docs` | The **author** of the doc | Adds OKF frontmatter and marks the doc as a **draft** |
 | `/okf-verify` | A **reviewer** (a different person) | Marks the doc as **stable** and records who verified it |
+| `/okf-unverify` | Anyone who needs to change a verified doc | Removes the sign-off and sets the doc back to **draft** |
 
 The output follows the official OKF v0.2 specification. The plugin ships a copy of it as `skills/okf/reference/SPEC.md`, and the same spec is at [GoogleCloudPlatform/open-knowledge-format](https://github.com/GoogleCloudPlatform/open-knowledge-format). Section numbers such as §5.2 refer to that spec.
 
@@ -73,7 +74,7 @@ Do these steps **in order**, once per computer. Each step has a check, so you kn
 | 1 | **Claude Code** (signed in) | Yes | The commands run inside it |
 | 2 | **`uv`** *or* **Python 3.11+ with PyYAML** | Yes, one of the two | The OKF checker is a Python script. `uv` is the easiest: it fetches the right Python and PyYAML by itself |
 | 3 | **The OKF plugin** (`okf@scaccogatto`) | Yes | Provides the OKF skills and the checker |
-| 4 | **This repository** (Git) | Yes | Contains the two commands in `.claude/commands/` |
+| 4 | **This repository** (Git) | Yes | Contains the three commands in `.claude/commands/` |
 
 ### Step 1: Install Claude Code
 
@@ -154,16 +155,17 @@ Check it worked: type `/okf` in Claude Code. You should see `okf:okf` and `okf:v
 
 ### Step 5: Get the command files
 
-Clone or pull this repository. The commands are these two files:
+Clone or pull this repository. The commands are these three files:
 
 ```
 .claude/commands/okf-docs.md
 .claude/commands/okf-verify.md
+.claude/commands/okf-unverify.md
 ```
 
 Start Claude Code **from the project folder** (or restart it after pulling). The first time, Claude Code asks whether you trust the folder: answer yes, otherwise it ignores the project settings.
 
-Check it worked: type `/okf-` and you should see both `okf-docs` and `okf-verify`.
+Check it worked: type `/okf-` and you should see `okf-docs`, `okf-verify` and `okf-unverify`.
 
 ### Final check
 
@@ -172,7 +174,7 @@ Before your first real run, make sure you can answer "yes" to all of these:
 - [ ] `claude --version` prints a version
 - [ ] `uv --version` prints a version, **or** Python 3.11+ is installed and `python -c "import yaml"` prints no error
 - [ ] `/okf` shows `okf:okf` and `okf:validate`
-- [ ] `/okf-` shows `okf-docs` and `okf-verify`
+- [ ] `/okf-` shows `okf-docs`, `okf-verify` and `okf-unverify`
 
 If one is "no", go back to that step. Section 7 lists common errors.
 
@@ -237,7 +239,7 @@ A file name with spaces goes in quotes:
 |---|---|
 | `index.md`, `log.md` | Reserved OKF files, not documents (§8, §9) |
 | Files that are not `.md` | Not Markdown |
-| Files already verified | Converting again would erase a reviewer's sign-off |
+| Files already verified | Converting again would erase a reviewer's sign-off. Run `/okf-unverify` first (section 5) |
 | Files with `status: deprecated` | Would bring a retired doc back to life |
 | Empty files | Nothing to convert |
 | Files with broken frontmatter (a starting `---` but no closing `---`, or invalid YAML) | It will not guess. Fix the frontmatter by hand, then run it again |
@@ -302,7 +304,46 @@ Reviewer runs  /okf-verify <reviewer> docs <file> -> status: stable
 Reviewer commits the sign-off, and the PR is merged
 ```
 
-If the doc changes later, edit it, then by hand set `status: draft`, update `generated.at` to the current UTC time, remove the old `verified` entries, and ask for a new review.
+### When a verified doc needs changes: `/okf-unverify`
+
+A verified doc is locked: `/okf-docs` skips it so nobody erases a review by accident. To change it, reopen it first:
+
+```
+/okf-unverify [folder] [file]
+```
+
+| Part | Required? | Default | Example |
+|---|---|---|---|
+| `[folder]` | No | `docs` | `docs` |
+| `[file]` | No | `all` | `overview.md` |
+
+There is no name argument: the command removes sign-offs, it does not add one.
+
+Examples:
+
+```
+/okf-unverify docs overview.md     # reopen one file (no question asked)
+/okf-unverify                      # reopen every verified file in docs (Claude asks you to confirm)
+```
+
+For each verified file it:
+
+- deletes the whole `verified` list (every reviewer's entry), because the review no longer matches the content (§5.3);
+- sets `status: draft`;
+- changes nothing else: not `generated`, not the other fields, not your text.
+
+It skips files that are not verified, `deprecated` files, and files without valid frontmatter. The summary lists whose sign-offs were removed.
+
+The full cycle for changing a verified doc:
+
+```
+/okf-unverify docs overview.md          -> status: draft, verified removed
+(edit the doc)
+/okf-docs <author> docs overview.md     -> generated updated to you and the current time
+/okf-verify <reviewer> docs overview.md -> status: stable, new sign-off
+```
+
+Commit after each step, so every change is in git.
 
 Always commit before running a command on many files, so you can review the result with `git diff`.
 
@@ -333,13 +374,13 @@ Claude chooses the type, description and tags by judgment, so two people may get
 | Command not in the `/` list | The files are missing, or Claude Code was started outside the project folder | Pull the repo, `cd` into it, start Claude Code again |
 | `No module named 'yaml'` | No `uv`, and PyYAML is missing | Section 2, Step 2 (install `uv`) or Step 3 |
 | `Python was not found` (Windows) | The Microsoft Store `python3` shortcut | Harmless: the commands try `uv`, `python` and `py` next |
-| `plugin:okf:bundle` failed to connect | The plugin's optional server needs `uv` | Install `uv` (Section 2, Step 2). The two commands work without it |
+| `plugin:okf:bundle` failed to connect | The plugin's optional server needs `uv` | Install `uv` (Section 2, Step 2). The commands work without it |
 | Checker reports errors on skipped files | Expected for empty or broken files | Fix the file by hand, then run again |
 
 ## 8. Good to know
 
 - **Your text is safe.** The commands only add or change frontmatter. They never edit your body text or rename files (the one exception is the old v0.1 `# Citations` section, see section 3).
-- **Run it as often as you like.** Running `/okf-docs` again on a draft file only fills in missing fields and keeps the original `generated` entry. Verified files are skipped.
+- **Run it as often as you like.** Running `/okf-docs` again on a draft file fills in missing fields and updates `generated` to you and the current time. Verified files are skipped; use `/okf-unverify` to reopen them.
 - **Always try one file first** if you are nervous: `/okf-docs yourname docs filename.md`.
 - **Undo.** If you committed to git first, run `git diff` to see exactly what changed and `git checkout -- <file>` to undo.
 - **Line endings.** The repository's `.gitattributes` stores `.md` files with LF endings, so Windows and Mac users get identical files and clean diffs.
@@ -351,5 +392,6 @@ Claude chooses the type, description and tags by judgment, so two people may get
 ```
 Author:     /okf-docs  <me>  docs  <file>     # make a draft
 Reviewer:   /okf-verify <me> docs  <file>     # approve it
+Reopen:     /okf-unverify     docs  <file>     # back to draft, sign-offs removed
 Everything: leave out <file> and answer "yes" when asked
 ```
