@@ -48,7 +48,7 @@ If `<file>` is `all`:
 3. Rules for the conversion:
    - Add OKF v0.2 YAML frontmatter with the required `type` field, set to the Diátaxis type that fits the content (`Runbook`, `Guide`, `Reference`, or `Explanation`).
    - Set `title` (the file's top heading, or a readable name from the file name) and `description` (one sentence summarizing the document). Both are recommended by the spec and the strict validation below fails without them. Always write both as double-quoted YAML strings (escape inner double quotes) so characters such as `:`, `#` and `&` stay valid.
-   - If the file has legacy v0.1 constructs (a `timestamp` field or a body `# Citations` list), first copy that one file into a temporary directory, run the validator there with `--migrate`, and copy it back. On Windows `--migrate` rewrites the file with CRLF line endings, so convert it back to the file's original line endings afterwards. Then continue with the rules below (`generated` is set to the human author).
+   - If the file has legacy v0.1 constructs (a `timestamp` field or a body `# Citations` list), first copy that one file into a temporary directory, run the `okf:validate` skill on that temporary directory with the argument `--migrate`, and copy the file back. On Windows `--migrate` rewrites the file with CRLF line endings, so convert it back to the file's original line endings afterwards. Then continue with the rules below (`generated` is set to the human author).
    - Keep the file's existing line endings (CRLF or LF) for every line you add, so the file does not end up with mixed endings.
    - If the file already has frontmatter, keep its existing fields (`resource`, `sources`, extra tags and so on) and only add or correct the fields in this list. Do not duplicate keys.
    - Set `owner: human:<author>`.
@@ -58,11 +58,11 @@ If `<file>` is `all`:
    - Omit the `verified` block completely, so it stays open for peer review.
    - Restructure the body into its Diátaxis type only where needed, without altering the factual content or changing file names.
 
-4. Run the OKF validation script to verify compliance:
-   - Locate the script at `~/.claude/plugins/cache/scaccogatto/okf/*/skills/validate/scripts/okf_validate.py` (use the highest version). If it is not there, look under `~/.claude/plugins/marketplaces/scaccogatto/skills/validate/scripts/`.
-   - If `<file>` is `all`: `python <script> <directory>/ --strict`
-   - If `<file>` is specific: the validator only accepts a directory, so run `python <script> <directory>/ --json` and consider only the `errors` and `warnings` entries that start with the target file's path inside the directory (for example `runbook.md:` or `sub/guide.md:`). Findings for other files are not yours to fix; mention them in one line. Pass only if there are no entries for the target file.
-   - Run it as plain `python <script> ...`, not `python -I`, because the script needs PyYAML from the user's site-packages. If it fails with `No module named 'yaml'`, run `python -m pip install --user pyyaml` and try again.
+4. Run the OKF validation with the plugin's own **`okf:validate`** skill (do not hard-code any path to the checker; the skill finds it by itself and handles `uv` or Python and PyYAML):
+   - If `<file>` is `all`: invoke `okf:validate` with the arguments `<directory>/ --strict`.
+   - If `<file>` is specific: the checker only accepts a directory, so invoke `okf:validate` with `<directory>/ --json` and consider only the `errors` and `warnings` entries that start with the target file's path inside the directory (for example `runbook.md:` or `sub/guide.md:`). Findings for other files are not yours to fix; mention them in one line. Pass only if there are no entries for the target file.
+   - The skill prints a `uv run ...` command and a `python3 ...` fallback. If `uv` is not installed and `python3` fails (on Windows `python3` is often a Microsoft Store stub that prints "Python was not found"), run the same script path with `python` instead, after `python -m pip install --quiet pyyaml`. This is normal, not an error.
+   - Only if the `okf:validate` skill is not available: find `okf_validate.py` anywhere under `~/.claude/plugins/` (use the highest version if there are several), run it with `python`, and if that fails with `No module named 'yaml'`, run `python -m pip install --user pyyaml` and try again. Never use `python -I`.
    - `--strict` (for `all`) makes warnings fail the run, so fix every error and warning before finishing. Broken cross-links to files outside the target are the only thing you may leave, and you must report them.
    - Files you skipped because they are empty or have broken frontmatter will still make the validator report errors. That is expected: do not try to fix them, list them under the skipped files with the fix the user needs to make, and say that the remaining validator findings are only for those files.
    - Finish with a short summary: files converted, files skipped (and why), and the validator result.

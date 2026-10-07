@@ -75,7 +75,7 @@ You can install it for yourself (user scope) or for one project (project scope).
 
 ### Step 2: Check Python
 
-The commands run a checker written in Python. In a terminal, run:
+The plugin's checker runs on Python (or `uv`). In a terminal, run:
 
 ```
 python --version
@@ -83,7 +83,9 @@ python --version
 
 If you see a version number, you are fine. If not, install Python from python.org and tick **"Add Python to PATH"**.
 
-You do not need to install anything else. If the checker needs a library called `pyyaml`, the command installs it for you.
+You do not need to install anything else. The plugin's own validate step installs the one library it needs.
+
+On Windows, `python3` may be a Microsoft Store shortcut that does not work. That is fine: the commands fall back to `python`. If you want the plugin's preferred runner, install `uv` (optional).
 
 ### Step 3: Get the command files
 
@@ -244,7 +246,7 @@ Claude chooses these by judgment, so two people running the command may get diff
 | `... does not exist` | Wrong folder or file name | Check the spelling and the path |
 | Not a Markdown file | You named a file that is not `.md` | Use a `.md` file |
 | Command not in the `/` list | The files are missing or Claude Code is not restarted | Check `.claude/commands/` and restart |
-| `No module named 'yaml'` | A checker library is missing | The command installs it itself. If it can't, run `python -m pip install --user pyyaml` |
+| `No module named 'yaml'` | A checker library is missing | Run `python -m pip install --user pyyaml`, then run the command again |
 | Checker reports errors on skipped files | Expected for empty or broken files | Fix the file by hand, then run again |
 
 ## 8. Good to know

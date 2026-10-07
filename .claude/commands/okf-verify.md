@@ -50,10 +50,10 @@ If `<file>` is `all`:
    - Record the sign-off in `verified` as a list entry `{ by: "human:<verifier>", at: "<CURRENT_DATE>" }`, where the date is the current system date as `YYYY-MM-DD`. If `verified` is absent, create it. If it already holds earlier entries (a single mapping or a list), keep them and append the new entry; never overwrite another person's sign-off.
    - Do not change the body, `generated`, `owner`, or any other field, and do not rename files. Keep the file's existing line endings (CRLF or LF).
 
-4. Run the OKF validation script to verify compliance:
-   - Locate the script at `~/.claude/plugins/cache/scaccogatto/okf/*/skills/validate/scripts/okf_validate.py` (use the highest version). If it is not there, look under `~/.claude/plugins/marketplaces/scaccogatto/skills/validate/scripts/`.
-   - If `<file>` is `all`: `python <script> <directory>/ --strict`
-   - If `<file>` is specific: the validator only accepts a directory, so run `python <script> <directory>/ --json` and consider only the `errors` and `warnings` entries that start with the target file's path inside the directory (for example `runbook.md:` or `sub/guide.md:`). Findings for other files are not yours to fix; mention them in one line. Pass only if there are no entries for the target file.
-   - Run it as plain `python <script> ...`, not `python -I`, because the script needs PyYAML from the user's site-packages. If it fails with `No module named 'yaml'`, run `python -m pip install --user pyyaml` and try again.
+4. Run the OKF validation with the plugin's own **`okf:validate`** skill (do not hard-code any path to the checker; the skill finds it by itself and handles `uv` or Python and PyYAML):
+   - If `<file>` is `all`: invoke `okf:validate` with the arguments `<directory>/ --strict`.
+   - If `<file>` is specific: the checker only accepts a directory, so invoke `okf:validate` with `<directory>/ --json` and consider only the `errors` and `warnings` entries that start with the target file's path inside the directory (for example `runbook.md:` or `sub/guide.md:`). Findings for other files are not yours to fix; mention them in one line. Pass only if there are no entries for the target file.
+   - The skill prints a `uv run ...` command and a `python3 ...` fallback. If `uv` is not installed and `python3` fails (on Windows `python3` is often a Microsoft Store stub that prints "Python was not found"), run the same script path with `python` instead, after `python -m pip install --quiet pyyaml`. This is normal, not an error.
+   - Only if the `okf:validate` skill is not available: find `okf_validate.py` anywhere under `~/.claude/plugins/` (use the highest version if there are several), run it with `python`, and if that fails with `No module named 'yaml'`, run `python -m pip install --user pyyaml` and try again. Never use `python -I`.
    - `--strict` (for `all`) makes warnings fail the run, so fix every error and warning before finishing. Broken cross-links to files outside the target are the only thing you may leave, and you must report them.
    - Finish with a short summary: files verified, files skipped (and why), and the validator result.
