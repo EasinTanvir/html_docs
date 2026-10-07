@@ -1,14 +1,4 @@
----
-type: Guide
-title: "Contact Form: Customization Guide"
-description: "How to customize the contact form: colors, width and next steps."
-owner: human:EasinTanvir
-status: stable
-generated: { by: "human:EasinTanvir", at: "2026-10-07" }
-verified:
-  - { by: "human:EasinTanvir", at: "2026-10-07" }
-tags: [contact-form, html, css, customization, how-to]
----
+# Contact Form: Customization Guide
 
 The `for` attribute on the label must match the input's `id`.
 
