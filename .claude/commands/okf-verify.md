@@ -8,7 +8,7 @@ Raw arguments: `$ARGUMENTS`
 Perform the following steps carefully. Parse the raw arguments above yourself, as described in Step 2.
 
 ### Step 1: Pre-requisite Check
-Check if the **Open Knowledge Format** plugin (`okf@scaccogatto`) is installed. Look for `okf@scaccogatto` in `~/.claude/plugins/installed_plugins.json`, or check that the `okf:okf` skill is available.
+Check if the **Open Knowledge Format** plugin (`okf@scaccogatto`) is installed. The plugin counts as installed if the `okf:okf` skill is available in this session. If you cannot tell, look for `okf@scaccogatto` in `~/.claude/plugins/installed_plugins.json`, but only count an entry whose scope is `user`, or whose `projectPath` is the current project (an entry for another project does not enable the plugin here). A user-scope or project-scope install both work.
 - If the plugin is **NOT installed**, output:
   > ❌ **Error:** The 'Open Knowledge Format' plugin is not installed yet. Please install it first using `/plugin marketplace add scaccogatto/okf-skills`, then `/plugin install okf@scaccogatto`, then `/reload-plugins`, and try again.
 - Stop execution immediately if the plugin is missing.

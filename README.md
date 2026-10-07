@@ -71,6 +71,8 @@ Open Claude Code and run these three commands, one at a time:
 /reload-plugins
 ```
 
+You can install it for yourself (user scope) or for one project (project scope). The commands work with either. If you choose project scope, run the install from inside this project's folder.
+
 ### Step 2: Check Python
 
 The commands run a checker written in Python. In a terminal, run:
