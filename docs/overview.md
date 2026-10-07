@@ -3,10 +3,8 @@ type: Reference
 title: "Contact Form: Overview"
 description: "Fields, layout, styling and known limitation of the single-file HTML/CSS contact form."
 tags: [contact-form, html, css, reference]
-status: stable
-generated: { by: human:Easin, at: 2026-10-07T07:02:33Z }
-verified:
-  - { by: human:Jack, at: 2026-10-07T07:03:56Z }
+status: draft
+generated: { by: human:Easin, at: 2026-10-07T07:14:43Z }
 ---
 
 # Contact Form: Overview
@@ -15,11 +13,12 @@ verified:
 
 ## Fields
 
-| Field   | Element      | Type  | Required |
-| ------- | ------------ | ----- | -------- |
-| Name    | `<input>`    | text  | yes      |
-| Email   | `<input>`    | email | yes      |
-| Message | `<textarea>` | n/a   | yes      |
+| Field       | Element      | Type  | Required |
+| ----------- | ------------ | ----- | -------- |
+| Name        | `<input>`    | text  | yes      |
+| Email       | `<input>`    | email | yes      |
+| Message     | `<textarea>` | n/a   | yes      |
+| LongMessage | `<textarea>` | n/a   | yes      |
 
 The browser validates the required fields and the email format before the form submits.
 
