@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Raw arguments: `$ARGUMENTS`
 
-Perform the following steps carefully. Parse the raw arguments above yourself, as described in Step 2 (do not rely on `$0`/`$1` placeholders: their numbering differs between Claude Code versions).
+Perform the following steps carefully. Parse the raw arguments above yourself, as described in Step 2 (do not rely on numbered argument placeholders: their numbering differs between Claude Code versions).
 
 The OKF rules below come from the OKF v0.2 specification shipped with the plugin (`skills/okf/reference/SPEC.md`). Section numbers (§) refer to it.
 
@@ -62,10 +62,7 @@ If `<file>` is `all`:
    - Change nothing else: not the body, not `generated` (§5.2: `verified` is independent of `generated.at`), not `owner`, not any other key, and do not rename files.
    - Keep the file's existing line endings (CRLF or LF) for every line you add or change, and keep UTF-8.
 
-5. Run the OKF validation with the plugin's own **`okf:validate`** skill (do not hard-code any path to the checker; the skill gives you the script path):
-   - If `<file>` is `all`: invoke `okf:validate` with the arguments `<directory>/ --strict`.
-   - If `<file>` is specific: the checker only accepts a directory, so invoke `okf:validate` with `<directory>/ --json` and consider only the `errors` and `warnings` entries that start with the target file's path inside the directory (for example `runbook.md:` or `sub/guide.md:`). Findings for other files are not yours to fix; mention them in one line. Pass only if there are no entries for the target file.
-   - The skill prints a `uv run ...` command and a `python3 ...` fallback. Try them in this order and use the first that works: `uv run <script> ...`; `python3 <script> ...`; `python <script> ...`; `py -3 <script> ...`. On Windows `python3` is often a Microsoft Store stub that prints "Python was not found": that is not an error, go to the next one. If a Python run fails with `No module named 'yaml'`, stop trying and tell the user to install PyYAML as described in README section 2, step 3 (do not install packages yourself). If it fails because the Python version is below 3.11, say so and point to the same section.
-   - Only if the `okf:validate` skill is not available: find `okf_validate.py` under `~/.claude/plugins/cache/` (use the highest version folder if there are several) and run it the same way.
-   - `/okf-verify` only changes `status` and `verified`. If the validator reports other problems in a file you verified (for example a missing `title`), do not fix them here: report them and tell the user to run `/okf-docs` or fix them by hand. Broken cross-links are tolerated (§6.1); just report them.
+5. Validate with the plugin's **`okf:validate`** skill: arguments `<directory>/ --strict` for `all`, or `<directory>/ --json` for a single file (the checker only accepts a folder, so judge only the findings for the target file).
+   - If the skill's `uv` and `python3` commands fail (common on Windows), run the same script with `python`, then `py -3`. If PyYAML is missing, point the user to README section 2 instead of installing it.
+   - `/okf-verify` only changes `status` and `verified`: report any other finding and tell the user to run `/okf-docs` or fix it by hand.
 6. Finish with a short summary: files verified, files skipped (and why), and the validator result.
