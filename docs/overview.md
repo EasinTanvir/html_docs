@@ -1,3 +1,14 @@
+---
+type: Reference
+title: "Contact Form: Overview"
+description: "Fields, layout, styling and known limitation of the single-file HTML/CSS contact form."
+tags: [contact-form, html, css, reference]
+status: stable
+generated: { by: human:Easin, at: 2026-10-07T07:02:33Z }
+verified:
+  - { by: human:Jack, at: 2026-10-07T07:03:56Z }
+---
+
 # Contact Form: Overview
 
 `form.html` is a single-file contact form built with plain HTML and CSS. It has no JavaScript and no dependencies.
