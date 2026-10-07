@@ -57,11 +57,62 @@ verified:
 | `verified` | Who reviewed it and when. It stays empty until a reviewer signs off |
 | `tags` | Keywords to help people find the doc |
 
-## 2. One-time setup
+## 2. Prerequisites and one-time setup
 
-Do this once per computer.
+Do these steps **in order**, once per computer. Each step has a check, so you know it worked before moving on.
 
-### Step 1: Install the plugin
+### What you need (summary)
+
+| # | What | Required? | Why |
+|---|---|---|---|
+| 1 | **Claude Code** (signed in) | Yes | The commands run inside it |
+| 2 | **Python 3.11 or newer** | Yes | The OKF checker is a Python script and needs 3.11+ |
+| 3 | **PyYAML** (a Python library) | Yes | The checker uses it to read frontmatter. Install it now so nothing surprises you later |
+| 4 | **The OKF plugin** | Yes | Provides the OKF skills and the checker |
+| 5 | **The two command files** | Yes | `okf-docs.md` and `okf-verify.md` in `.claude/commands/` |
+| 6 | **Git** | Recommended | To pull the command files and to undo changes |
+| 7 | `uv` | Optional | The plugin's preferred runner. Not needed if Python works |
+
+### Step 1: Install Claude Code
+
+Install Claude Code and sign in. To check, open a terminal and run:
+
+```
+claude --version
+```
+
+You should see a version number.
+
+### Step 2: Install Python 3.11 or newer
+
+Check what you have:
+
+```
+python --version
+```
+
+- If it shows `Python 3.11` or higher, go to Step 3.
+- If it shows an older version, or "not found", install the latest Python from python.org.
+  - **Windows:** during the installer, tick **"Add python.exe to PATH"**, then close and reopen your terminal.
+  - **Mac or Linux:** the command may be `python3` instead of `python`. Mac and Linux are not tested yet, so tell the team if something fails.
+
+On Windows, `python3` may be a Microsoft Store shortcut that does not work. That is fine: the commands fall back to `python`.
+
+### Step 3: Install PyYAML
+
+```
+python -m pip install pyyaml
+```
+
+Check it worked:
+
+```
+python -c "import yaml; print('PyYAML OK')"
+```
+
+You should see `PyYAML OK`. If `pip` is not found, Python was not installed with pip: repeat Step 2 with the python.org installer.
+
+### Step 4: Install the OKF plugin
 
 Open Claude Code and run these three commands, one at a time:
 
@@ -73,21 +124,9 @@ Open Claude Code and run these three commands, one at a time:
 
 You can install it for yourself (user scope) or for one project (project scope). The commands work with either. If you choose project scope, run the install from inside this project's folder.
 
-### Step 2: Check Python
+Check it worked: type `/okf` in Claude Code. You should see `okf:okf` and `okf:validate` in the list.
 
-The plugin's checker runs on Python (or `uv`). In a terminal, run:
-
-```
-python --version
-```
-
-If you see a version number, you are fine. If not, install Python from python.org and tick **"Add Python to PATH"**.
-
-You do not need to install anything else. The plugin's own validate step installs the one library it needs.
-
-On Windows, `python3` may be a Microsoft Store shortcut that does not work. That is fine: the commands fall back to `python`. If you want the plugin's preferred runner, install `uv` (optional).
-
-### Step 3: Get the command files
+### Step 5: Get the command files
 
 The commands are two files inside the project:
 
@@ -96,7 +135,25 @@ The commands are two files inside the project:
 .claude/commands/okf-verify.md
 ```
 
-Pull or copy the project so these files exist, then restart Claude Code in that project folder. Type `/okf-` and you should see both commands in the list.
+Pull or copy the project so these files exist, then **restart Claude Code in that project folder**.
+
+Check it worked: type `/okf-` and you should see both `okf-docs` and `okf-verify`.
+
+### Step 6 (optional): Install `uv`
+
+The plugin prefers to run its checker with `uv`. You can skip this: if `uv` is missing, the commands use Python instead. If you want it, see the install instructions at docs.astral.sh/uv.
+
+### Final check
+
+Before your first real run, make sure you can answer "yes" to all of these:
+
+- [ ] `claude --version` prints a version
+- [ ] `python --version` prints 3.11 or higher
+- [ ] `python -c "import yaml"` prints no error
+- [ ] `/okf` shows `okf:okf` and `okf:validate`
+- [ ] `/okf-` shows `okf-docs` and `okf-verify`
+
+If one is "no", go back to that step. Section 7 lists common errors.
 
 ## 3. How to use `/okf-docs` (author)
 
@@ -246,7 +303,7 @@ Claude chooses these by judgment, so two people running the command may get diff
 | `... does not exist` | Wrong folder or file name | Check the spelling and the path |
 | Not a Markdown file | You named a file that is not `.md` | Use a `.md` file |
 | Command not in the `/` list | The files are missing or Claude Code is not restarted | Check `.claude/commands/` and restart |
-| `No module named 'yaml'` | A checker library is missing | Run `python -m pip install --user pyyaml`, then run the command again |
+| `No module named 'yaml'` | PyYAML is missing | Do Step 3: `python -m pip install pyyaml`, then run the command again |
 | Checker reports errors on skipped files | Expected for empty or broken files | Fix the file by hand, then run again |
 
 ## 8. Good to know
