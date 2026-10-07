@@ -1,0 +1,4 @@
+# Keep line endings identical on Windows, macOS and Linux, so OKF frontmatter
+# edits never show up as whole-file diffs.
+* text=auto
+*.md text eol=lf

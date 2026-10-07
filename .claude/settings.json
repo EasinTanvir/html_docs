@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "scaccogatto": {
+      "source": {
+        "source": "github",
+        "repo": "scaccogatto/okf-skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "okf@scaccogatto": true
+  }
+}
