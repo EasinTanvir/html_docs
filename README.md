@@ -10,19 +10,76 @@ Three Claude Code commands that turn our normal Markdown docs into **OKF** (Open
 
 The output follows the official OKF v0.2 specification. The plugin ships a copy of it as `skills/okf/reference/SPEC.md`, and the same spec is at [GoogleCloudPlatform/open-knowledge-format](https://github.com/GoogleCloudPlatform/open-knowledge-format). Section numbers such as §5.2 refer to that spec.
 
-## 1. What is OKF? (the 30-second version)
+## 1. Prerequisites and one-time setup
+
+Do these steps **in order**, once per computer. They work on Windows, macOS and Linux.
+
+| # | What | Why |
+|---|---|---|
+| 1 | **Claude Code** (signed in) | The commands run inside it |
+| 2 | **`uv`** *or* **Python 3.11+ with PyYAML** | Runs the OKF checker |
+| 3 | **The OKF plugin** (`okf@scaccogatto`) | Provides the OKF skills and the checker |
+| 4 | **This repository** (Git) | Contains the commands in `.claude/commands/` |
+
+### Step 1: Install Claude Code
+
+Install it and sign in. Check: `claude --version` prints a version.
+
+### Step 2: Install `uv` (recommended)
+
+`uv` fetches the right Python and PyYAML for the checker. The OKF plugin's optional `bundle` server also needs it.
+
+- **Windows** (PowerShell): `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+- **macOS / Linux**: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+Reopen your terminal. Check: `uv --version` prints a version. If it does, skip Step 3.
+
+### Step 3 (only without `uv`): Python 3.11+ and PyYAML
+
+1. Check `python3 --version`, `python --version` or `py -3 --version`. You need **3.11 or higher**; if not, install it from python.org (on Windows, tick **"Add python.exe to PATH"**). A Windows `python3` that says "Python was not found" is a Store shortcut: use `python`.
+2. Install PyYAML: `python -m pip install --user pyyaml`. On macOS/Linux, if you get `externally-managed-environment`, use `uv` (Step 2) or `sudo apt install python3-yaml`.
+3. Check: `python -c "import yaml; print('PyYAML OK')"`
+
+### Step 4: Install the OKF plugin
+
+In Claude Code, inside this project's folder:
+
+```
+/plugin marketplace add scaccogatto/okf-skills
+/plugin install okf@scaccogatto
+/reload-plugins
+```
+
+Choose user scope or project scope when asked. (Shell version: `claude plugin marketplace add ...` and `claude plugin install ...`.) `.claude/settings.json` only *enables* the plugin; each person still installs it once.
+
+Check: typing `/okf` shows `okf:okf` and `okf:validate`.
+
+### Step 5: Get the command files
+
+Clone or pull this repository, then start Claude Code **from the project folder** and trust the folder when asked. The commands are:
+
+```
+.claude/commands/okf-docs.md
+.claude/commands/okf-verify.md
+.claude/commands/okf-unverify.md
+```
+
+Check: typing `/okf-` shows `okf-docs`, `okf-verify` and `okf-unverify`.
+
+### Final check
+
+- [ ] `claude --version` prints a version
+- [ ] `uv --version` prints a version, **or** Python 3.11+ is installed and `python -c "import yaml"` prints no error
+- [ ] `/okf` shows `okf:okf` and `okf:validate`
+- [ ] `/okf-` shows the three commands
+
+If one is "no", go back to that step. Section 7 lists common errors.
+
+## 2. What is OKF? (the 30-second version)
 
 OKF is a plain Markdown file with a small block of settings at the top, called **frontmatter**. It tells people and AI tools what kind of doc it is, who wrote it, and whether it has been reviewed. Your text stays exactly as you wrote it.
 
-Before:
-
-```markdown
-# Restart the Mail Service
-
-Use this when the mail queue is stuck.
-```
-
-After `/okf-docs easin`:
+After `/okf-docs easin`, the frontmatter is added at the top of the file:
 
 ```markdown
 ---
@@ -33,10 +90,6 @@ tags: [mail, operations]
 status: draft
 generated: { by: human:easin, at: 2026-10-07T09:15:00Z }
 ---
-
-# Restart the Mail Service
-
-Use this when the mail queue is stuck.
 ```
 
 After `/okf-verify jack`, two things change: `status` becomes `stable`, and a `verified` list is added under `generated`:
@@ -63,120 +116,6 @@ Every file gets the same keys in the same order and the same style, whoever runs
 
 Times are full UTC timestamps such as `2026-10-07T09:15:00Z`, because the spec requires every time value to be an ISO 8601 datetime with a UTC offset (§5). The commands read the time from your computer's clock.
 
-## 2. Prerequisites and one-time setup
-
-Do these steps **in order**, once per computer. Each step has a check, so you know it worked before moving on. They work on Windows, macOS and Linux.
-
-### What you need (summary)
-
-| # | What | Required? | Why |
-|---|---|---|---|
-| 1 | **Claude Code** (signed in) | Yes | The commands run inside it |
-| 2 | **`uv`** *or* **Python 3.11+ with PyYAML** | Yes, one of the two | The OKF checker is a Python script. `uv` is the easiest: it fetches the right Python and PyYAML by itself |
-| 3 | **The OKF plugin** (`okf@scaccogatto`) | Yes | Provides the OKF skills and the checker |
-| 4 | **This repository** (Git) | Yes | Contains the three commands in `.claude/commands/` |
-
-### Step 1: Install Claude Code
-
-Install Claude Code and sign in. To check, open a terminal and run:
-
-```
-claude --version
-```
-
-You should see a version number.
-
-### Step 2: Install `uv` (recommended)
-
-`uv` runs the OKF checker with the right Python version and PyYAML, so you do not have to manage Python yourself. The OKF plugin also needs it for its optional `bundle` server.
-
-- **Windows** (PowerShell): `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
-- **macOS / Linux**: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-
-Close and reopen your terminal, then check:
-
-```
-uv --version
-```
-
-You should see a version number. If this worked, **skip Step 3**.
-
-### Step 3 (only if you did not install `uv`): Python 3.11+ and PyYAML
-
-Check your Python. Use the first command that prints a version:
-
-```
-python3 --version
-python --version
-py -3 --version
-```
-
-It must be **3.11 or higher** (the checker's own requirement). If not, install the latest Python from python.org (on Windows, tick **"Add python.exe to PATH"** in the installer, then reopen the terminal). On Windows, `python3` may print "Python was not found": that is a Microsoft Store shortcut. Ignore it and use `python`.
-
-Install PyYAML with the same command name that worked above (here `python`):
-
-```
-python -m pip install --user pyyaml
-```
-
-- **macOS (Homebrew) or Linux** may refuse with `externally-managed-environment`. Install `uv` (Step 2) instead, or on Debian/Ubuntu run `sudo apt install python3-yaml`.
-
-Check it worked:
-
-```
-python -c "import yaml; print('PyYAML OK')"
-```
-
-### Step 4: Install the OKF plugin
-
-Open Claude Code **inside this project's folder** and run these commands, one at a time:
-
-```
-/plugin marketplace add scaccogatto/okf-skills
-/plugin install okf@scaccogatto
-```
-
-When asked for a scope, choose **"Install for you (user scope)"** (simplest) or **"Install for all collaborators on this repository (project scope)"**. Both work. If Claude Code says `Run /reload-plugins to apply`, run:
-
-```
-/reload-plugins
-```
-
-Prefer the terminal? These do the same, from your shell:
-
-```
-claude plugin marketplace add scaccogatto/okf-skills
-claude plugin install okf@scaccogatto
-```
-
-This repository already lists the plugin in `.claude/settings.json`, so Claude Code reminds you if it is not installed yet. That file only *enables* the plugin; each person still has to install it once with the commands above.
-
-Check it worked: type `/okf` in Claude Code. You should see `okf:okf` and `okf:validate` in the list. You can also run `claude plugin list` in your shell.
-
-### Step 5: Get the command files
-
-Clone or pull this repository. The commands are these three files:
-
-```
-.claude/commands/okf-docs.md
-.claude/commands/okf-verify.md
-.claude/commands/okf-unverify.md
-```
-
-Start Claude Code **from the project folder** (or restart it after pulling). The first time, Claude Code asks whether you trust the folder: answer yes, otherwise it ignores the project settings.
-
-Check it worked: type `/okf-` and you should see `okf-docs`, `okf-verify` and `okf-unverify`.
-
-### Final check
-
-Before your first real run, make sure you can answer "yes" to all of these:
-
-- [ ] `claude --version` prints a version
-- [ ] `uv --version` prints a version, **or** Python 3.11+ is installed and `python -c "import yaml"` prints no error
-- [ ] `/okf` shows `okf:okf` and `okf:validate`
-- [ ] `/okf-` shows `okf-docs`, `okf-verify` and `okf-unverify`
-
-If one is "no", go back to that step. Section 7 lists common errors.
 
 ## 3. How to use `/okf-docs` (author)
 
@@ -226,7 +165,7 @@ A file name with spaces goes in quotes:
 2. **Argument check.** It reads your name, folder and file. It stops with a clear error if something is wrong.
 3. **Confirmation (only for "all").** Claude asks: *"Are you sure you want to proceed? (yes/no)"*. Type `yes` to continue. Anything else cancels and changes nothing.
 4. **Conversion.** For each file, Claude:
-   - adds the frontmatter (`type`, `title`, `description`, `tags`, `status: draft`, `generated`) in the fixed order shown in section 1;
+   - adds the frontmatter (`type`, `title`, `description`, `tags`, `status: draft`, `generated`) in the fixed order shown in section 2;
    - picks the doc type;
    - keeps any frontmatter keys the file already had;
    - never changes your text or the file name.
@@ -353,7 +292,7 @@ Claude picks one of four types by reading the content. The spec lets teams choos
 
 | Type | Use for | Example |
 |---|---|---|
-| `Runbook` | Step-by-step instructions for an incident or task | "Restart the Mail Service" |
+| `Runbook` | Step-by-step instructions for an incident or task | "How to restart a service" |
 | `Guide` | How to achieve a goal | "How to customize the form" |
 | `Reference` | Facts to look up: tables, fields, settings | "Mail API Reference" |
 | `Explanation` | Why something works the way it does | "Why we use a queue" |
@@ -364,7 +303,7 @@ Claude chooses the type, description and tags by judgment, so two people may get
 
 | Message | Meaning | Fix |
 |---|---|---|
-| `The 'Open Knowledge Format' plugin is not installed yet` | Plugin missing | Section 2, Step 4 |
+| `The 'Open Knowledge Format' plugin is not installed yet` | Plugin missing | Section 1, Step 4 |
 | `Author name is required as the first argument` | You typed the command without a name | Add your name: `/okf-docs easin` |
 | `Verifier name is required...` | Same, for `/okf-verify` | `/okf-verify jack` |
 | Name has invalid characters | Your name has spaces or symbols | Use only letters, digits, `.`, `_`, `-` |
@@ -372,9 +311,9 @@ Claude chooses the type, description and tags by judgment, so two people may get
 | `... does not exist` | Wrong folder or file name | Check the spelling and the path (relative to the project folder) |
 | Not a Markdown file | You named a file that is not `.md` | Use a `.md` file |
 | Command not in the `/` list | The files are missing, or Claude Code was started outside the project folder | Pull the repo, `cd` into it, start Claude Code again |
-| `No module named 'yaml'` | No `uv`, and PyYAML is missing | Section 2, Step 2 (install `uv`) or Step 3 |
+| `No module named 'yaml'` | No `uv`, and PyYAML is missing | Section 1, Step 2 (install `uv`) or Step 3 |
 | `Python was not found` (Windows) | The Microsoft Store `python3` shortcut | Harmless: the commands try `uv`, `python` and `py` next |
-| `plugin:okf:bundle` failed to connect | The plugin's optional server needs `uv` | Install `uv` (Section 2, Step 2). The commands work without it |
+| `plugin:okf:bundle` failed to connect | The plugin's optional server needs `uv` | Install `uv` (Section 1, Step 2). The commands work without it |
 | Checker reports errors on skipped files | Expected for empty or broken files | Fix the file by hand, then run again |
 
 ## 8. Good to know
